@@ -132,7 +132,7 @@ This will download the images for and start the base of your stack with basic se
 
 ## Updating Containers In Your Stack
 
-The service "auto-updater" is included and can automatically update containers who have the label "com.centurylinklabs.watchtower.enable=true".  If you would prefer to control when and to which version you update your containers to, or if the automatic updates are causing you issues taking services offline when they don't start up correctly (health checks have been included on most services to help mitigate this), you can disable the auto-updater on a per-service basis by setting the label "com.centurylinklabs.watchtower.enable=false" on that service.  You can also update services using a scheduled cron job that runs the following commands:
+The service "auto-updater" is included and can automatically update containers who have the label "com.ouroboros.enable=true".  If you would prefer to control when and to which version you update your containers to, or if the automatic updates are causing you issues taking services offline when they don't start up correctly (health checks have been included on most services to help mitigate this), you can disable the auto-updater on a per-service basis by setting the label "com.ouroboros.enable=false" on that service.  You can also update services using a scheduled cron job that runs the following commands:
 
 ```bash
 #This will pull the latest image for each service specified in the -f included yaml files

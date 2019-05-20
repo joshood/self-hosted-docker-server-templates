@@ -138,7 +138,7 @@ services:
       - traefik.frontend.rule=Host:{MAILU_DOMAIN:?Please copy template.env to .env and provide provide a value for MAILU_DOMAIN}
       - traefik.docker.network=mailu
       - traefik.default.protocol=http
-      - com.centurylinklabs.watchtower.enable=true
+      - com.ouroboros.enable=true
 
   mailu-fetchmail:
     image: mailu/fetchmail:$VERSION
