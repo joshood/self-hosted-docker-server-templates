@@ -55,7 +55,7 @@ services:
     #proxy about how or if to proxy requests to this service
     labels:
       - "traefik.enable=false" #tells traefik reverse proxy to ignore this container, do not proxy requests to it
-  #     - "com.ouroboros.enable=true"
+      - "com.ouroboros.enable=true"
     restart: always #if this container stops for any reason, docker will restart it automatically
     volumes:
       - duckdns-config:/config
@@ -79,9 +79,9 @@ services:
     expose:
       - "8080" #admin web UI port
     labels:
-      - "com.centurylinklabs.watchtower.enable=true" #enables watchtower for auto updates
+      - "com.ouroboros.enable=true" #enables watchtower for auto updates
       - "traefik.enable=true" #set to false to disable admin dashboard
-      - "traefik.frontend.rule=Host:${TRAEFIK_DASHBOARD_URL:?Please set the value of TRAEFIK_DASHBOARD_URL in .env or comment this line out}"
+      - "traefik.frontend.rule=Host:${TRAEFIK_DASHBOARD_DOMAIN:?Please set the value of TRAEFIK_DASHBOARD_DOMAIN in .env or comment this line out}"
       - "traefik.port=8080"
       - "traefik.frontend.auth.digest.usersFile=/etc/traefik/dashboard-users-passwd"
     volumes:
@@ -94,7 +94,7 @@ services:
     #The following section allows you to deifne services which must be started before this service can start
     depends_on:
       - dynamic-dns
-    environment: 
+    environment:
       DUCKDNS_TOKEN: ${DUCKDNS_TOKEN}
     networks:
     #containers will default to the default bridge network if none is specified
@@ -111,21 +111,23 @@ services:
     container_name: ouroboros
     restart: unless-stopped
     environment:
-    #For a full list of options for ourobors, see https://github.com/pyouroboros/ouroboros/wiki/Usage
+    #For a full list of options for ouroboros, see https://github.com/pyouroboros/ouroboros/wiki/Usage
       - CLEANUP=true #delete old images after update
       - DOCKER_SOCKETS="unix://var/run/docker.sock" #comment this line out on windows
       #- DOCKER_SOCKETS="npipe:////./pipe/docker_engine tcp://localhost:2375" #uncomment this line on windows
-      # Define how often to check for updates. INTERVAL is listed in seconds, with a hardcoded minimum of 30
+      # Define how often to check for updates, defaults to a minimum of 300 (30 seconds)
       - INTERVAL=300
       - LOG_LEVEL=info
-      - SELF_UPDATE=true #self-update ouroboros
+      #make ouroboros self-updating
+      - SELF_UPDATE=true
       #get auto-update config from labels only. Ignore containers that have no label
       - LABEL_ENABLE=true
       - LABELS_ONLY=true
       - TZ=${TZ}
-      # Optional alternate method of defining the time interval
+      #optional alternate method of defining the update interval
+      #Specify how often to check for updates using a cron string (see https://devhints.io/cron)
       #this example checks every 30 minutes
-      #-CRON="*/30 * * * *"
+      #- CRON="*/30 * * * *"
     labels:
       - "traefik.enable=false"
       - "com.ouroboros.enable=true" #Yes, it can watch and update itself
@@ -140,17 +142,6 @@ services:
     volumes:
       #allows ouroboros to monitor for changes and to read labels
       - /var/run/docker.sock:/var/run/docker.sock ###Comment this line out in Windows
-
-#   docker-gui:
-#     image: portainer/portainer:latest
-#     ports:
-#       # by mapping this port to the host, we are also making this service available even if
-#       # traefik is not running at http://localhost:9000 on your host pc or
-#       # http://yourhostPCsnetworkname:9000 from other PCs on your network
-#       # note that it is an insecure http connection.  Comment out the ports section if
-#       # you do not trust the other devices on your network to not spy on you
-#      - "9000:9000"
-
 
   docker-gui:
     image: portainer/portainer:latest
@@ -172,14 +163,14 @@ services:
       - traefik.frontend.rule=Host:${PORTAINER_DOMAIN:?Please copy template.env to .env and provide provide a value for PORTAINER_DOMAIN}
       #the target port of the service that traefik should forward
       - traefik.port=9000
-      - com.centurylinklabs.watchtower.enable=true
+      - com.ouroboros.enable=true
     networks:
       - docker-gui-network
     volumes:
       - portainer-data:/data #map named volume to directory in container
       #allows portainer to control docker (Linux/Mac only)
       - /var/run/docker.sock:/var/run/docker.sock ###Comment this line out in Windows
-    #this section allows us to modify arguments passed to the default command executed inside this container
+    #this section allows us to modify arguments passed to the default command executed inside this container (AKA the entrypoint)
     #when it starts
 ###    command: -d /data -H npipe:////./pipe/docker_engine #uncomment this line in windows
 ###    command: -d /data -H tcp://localhost:2375 #alternative to the last line, pick only 1!
@@ -230,7 +221,7 @@ services:
     expose:
       - "25"
     labels:
-  #     - "com.ouroboros.enable=true"
+      - "com.ouroboros.enable=true"
       - "traefik.enable=false"
     volumes:
       - mail-relay-lib-postfix:/var/lib/postfix

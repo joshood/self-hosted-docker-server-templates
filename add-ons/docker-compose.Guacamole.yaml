@@ -81,6 +81,8 @@ services:
       - MYSQL_DATABASE=guacamole_db
       - MYSQL_USER=${GUACAMOLE_DB_USERNAME:-guacamole_user}
       - MYSQL_PASSWORD=${GUACAMOLE_DB_PASSWORD}
+    #defining the entrypoint changes what the default command that is run inside this container altogether, as opposed to the command section
+    #which simply appends arguments to the entrypoint
     entrypoint: '/bin/bash -c "/opt/guacamole/bin/initdb.sh --mysql > /mnt/initdb.sql" '
     labels:
       - "traefik.enable=false"
